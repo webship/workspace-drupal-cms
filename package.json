@@ -27,6 +27,15 @@
   "workspacePlugin": {
     "name": "drupal-cms",
     "label": "Drupal CMS",
+    "needs": [
+      [
+        "dev",
+        "test",
+        "sandboxes",
+        "demos"
+      ],
+      "ai-agents"
+    ],
     "commands": {
       "types": [
         "sites"
