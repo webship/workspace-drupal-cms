@@ -4,7 +4,8 @@ Drupal CMS for the [Webship Workspace](https://github.com/webship/workspace) das
 that makes a real Drupal CMS site in a container (a release, a site template, add-on recipes), a
 Drush tool for the sites it built, the default accounts, the
 [Drupal CMS step pack](https://github.com/webship/drupal-cms-steps) wired into the workspace's
-testing setup, and two AI agents that know all of it.
+testing setup, and its AI items — two agents, a skill, a command and a prompt —
+each listed in the workspace folder of its kind.
 
 The workspace is container-based (DDEV by default): a Drupal CMS project is a row like any other, so
 the row menus the core draws (start, stop, launch, backup, clone, remove, tests) work on it unchanged.
@@ -19,16 +20,25 @@ whole of the platform: the build, the accounts and the testing hook are the plug
 cd ~/workspace
 bash core/scripts/plugins.sh --require github:webship/workspace-drupal-cms   # npm install into the dashboard
 bash core/scripts/plugins.sh --activate drupal-cms                            # plugins.drupal-cms in settings.yml
-bash core/scripts/plugins.sh --install drupal-cms                             # commands, functions, args, agents
+bash core/scripts/plugins.sh --install drupal-cms                             # commands, functions, args, AI items
 bash core/scripts/plugins.sh --configure drupal-cms                           # nothing to configure: it has no settings file
 ```
 
 The same four steps are buttons on the dashboard's **Settings → Plugins** page. `--install` is
-idempotent. `--uninstall` removes what it placed; an agent you edited stays.
+idempotent. `--uninstall` removes what it placed; an AI item you edited stays.
 
-The commands land in the sites folders that are in the workspace (`dev`, `test`, `sandboxes`,
-`demos`); the agents land in the AI Agents folder (`ai-agents/`) when the workspace has one, and are
-installed into `~/.claude/agents` from there like any other agent.
+Everything the plugin carries lands in the folder it belongs to, when that folder is an active
+workspace folder:
+
+| What | Lands in |
+| --- | --- |
+| `cmd-drupal-cms-project.sh`, `cmd-tools-drupal-cms-cli.sh` | every active sites folder: `dev/`, `test/`, `sandboxes/`, `demos/` |
+| The agents `drupal-cms-site-builder`, `drupal-cms-tester` | `ai-agents/` |
+| The skill `drupal-cms-scenarios` | `ai-skills/` |
+| The command `/drupal-cms-test` | `ai-commands/` |
+| The prompt `drupal-cms-build-and-test` | `ai-prompts/` |
+
+There they are listed like any other item of the folder, and installed into Claude Code from there.
 
 It needs a Webship Workspace 1.0.7 or later.
 
@@ -37,18 +47,18 @@ It needs a Webship Workspace 1.0.7 or later.
 A workspace starts empty, so the manifest says what else this plugin needs (`needs`):
 
 - one sites folder, for the builder and the tool: `dev`, `test`, `sandboxes`, `demos` (`dev` is the one added when none is there). The folder also carries `cmd-tools-testing.sh` and the Users tools this plugin's hooks answer to.
-- `ai-agents`, the AI Agents folder its two agents are placed in.
+- `ai-agents`, `ai-skills`, `ai-commands` and `ai-prompts`: the AI folders its agents, its skill, its command and its prompt are placed in.
 
 `--require` says so, `--activate` and `--install` stop until the workspace has them, and `--with-needs` adds what is missing first:
 
 ```bash
-bash core/scripts/plugins.sh --activate drupal-cms --with-needs   # dev and ai-agents are required, activated and installed first
+bash core/scripts/plugins.sh --activate drupal-cms --with-needs   # dev and the four AI folders are required, activated and installed first
 bash core/scripts/plugins.sh --install drupal-cms
 ```
 
 Everything the builder runs for a site runs in the site's own container, through the container tool the workspace already needs; the plugin asks for no command of its own on the machine.
 
-A workspace that knows none of this (Webship Workspace 1.0.8 and older) ignores the keys: add a sites folder and the AI Agents folder yourself, then `--install drupal-cms` again.
+A workspace that knows none of this (Webship Workspace 1.0.8 and older) ignores the keys: add a sites folder and the AI folders yourself, then `--install drupal-cms` again. A kind whose folder is not there is skipped, and the install says so.
 
 ## What the package holds
 
@@ -59,8 +69,12 @@ A workspace that knows none of this (Webship Workspace 1.0.8 and older) ignores 
 | `scripts/functions/fun-drupal-cms.sh` | The bash functions behind both, sourced by bootstrap once installed; the names the core's tools look for (`set_drupal_cms_users`, `add_drupal_cms_users`, `cancel_drupal_cms_users`, `testing_configure_drupal_cms`) |
 | `scripts/args/arg-drupal-cms.sh`, `arg-drupal-cms-cli.sh` | Their argparse; the Build form draws the builder's flags from the first |
 | `testing/site.feature` | The first feature a Drupal CMS project gets when testing is set up |
-| `agents/drupal-cms-site-builder.md` | The agent that builds and maintains Drupal CMS sites with these commands |
-| `agents/drupal-cms-tester.md` | The agent that writes and runs scenarios with the Drupal CMS step pack |
+| `ai/agents/drupal-cms-site-builder.md` | The agent that builds and maintains Drupal CMS sites with these commands |
+| `ai/agents/drupal-cms-tester.md` | The agent that writes and runs scenarios with the Drupal CMS step pack |
+| `ai/skills/drupal-cms-scenarios/` | The skill: the step packs' phrases by area, the traps found on a real site, four example features |
+| `ai/commands/drupal-cms-test.md` | The slash command `/drupal-cms-test <site>`: set up, match every step, run, report |
+| `ai/prompts/drupal-cms-build-and-test.md` | The prompt: a whole launch command for a new session |
+| `docs/plugin-items-pattern.md` | How a plugin carries its own commands and AI items, and how to prove it |
 | `src/index.ts` | `register(api)`: what the assistant is told about Drupal CMS here |
 | `features/drupal-cms.feature` | Scenarios for the dashboard's own browser suite |
 
@@ -217,25 +231,46 @@ The first feature covers the front page, the login page, each default account, t
 home page as a page of the page builder (on the Starter template; skipped on another) and the
 consent notice.
 
-## The agents
+## The AI items
 
-| Agent | Use it to |
-| --- | --- |
-| `drupal-cms-site-builder` | Build, update, maintain or remove a Drupal CMS site with the commands above, in containers only |
-| `drupal-cms-tester` | Set the testing stack up, look at the site in the Playwright MCP browser first, write scenarios from the packs' steps and run them; it never creates an account in a suite and never writes a platform name into a step phrase |
+`ai/` in the package holds one folder per kind, the manifest's `ai` block names each item, and
+`--install` places it in the workspace folder of that kind.
 
-After `--install` they are in the AI Agents folder of the dashboard; **Install** there puts one into
-`~/.claude/agents`, or from the command line:
+| Kind | Item | Use it to |
+| --- | --- | --- |
+| Agent | `drupal-cms-site-builder` | Build, update, maintain or remove a Drupal CMS site with the commands above, in containers only |
+| Agent | `drupal-cms-tester` | Set the testing stack up, look at the site in the Playwright MCP browser first, write scenarios from the packs' steps and run them; it never creates an account in a suite and never writes a platform name into a step phrase |
+| Skill | `drupal-cms-scenarios` | Write a scenario from phrases that exist: the packs' steps by area (the dashboard, pages of the page builder, the site template, the editorial tools, the trash), the handles of the users registry, the traps found on a real site, and four features that pass on a fresh site |
+| Command | `/drupal-cms-test <site> [feature or @tag]` | Run the suite of a site from inside a session: set up when missing, match every step, run, report what failed and why |
+| Prompt | `drupal-cms-build-and-test` | Start a session that builds a site, says what it is, sets the testing stack up and runs the first feature |
+
+After `--install` each is in its folder on the dashboard. **Install** there puts an agent, a skill
+or a command into Claude Code (`~/.claude/agents`, `~/.claude/skills`, `~/.claude/commands`), or
+from the command line:
 
 ```bash
-cd ~/workspace/ai-agents
-bash cmd-tools-ai-items.sh drupal-cms-tester --install
+cd ~/workspace/ai-agents   && bash cmd-tools-ai-items.sh drupal-cms-tester --install
+cd ~/workspace/ai-skills   && bash cmd-tools-ai-items.sh drupal-cms-scenarios --install
+cd ~/workspace/ai-commands && bash cmd-tools-ai-items.sh drupal-cms-test --install
 ```
+
+A prompt is not installed: it is the whole `claude …` launch command of a new session, and the
+dashboard's **New screen** form lists it as a template. By hand, fill the placeholders in and run
+the command of the file from the folder it names.
+
+The items are written for any AI CLI, with Claude Code as the default shape: the frontmatter and
+the file layout are Claude Code's, the body of each item is plain Markdown that names no tool or
+feature of one CLI, a command says in words what its arguments are, and the text between the
+triple quotes of a prompt can be given to another AI CLI as it is.
+
+Every step phrase the items show is checked against the definitions of the step pack and of
+webship-js (`tests/fixtures/step-definitions.txt`), and every command and flag against the
+plugin's own. The shape is the reference's: [`docs/plugin-items-pattern.md`](docs/plugin-items-pattern.md).
 
 ## Develop it
 
 ```bash
 npm install     # builds dist/ (TypeScript)
 npm run lint
-npm test        # the manifest, the commands, the agents, the functions against a scaffolded project
+npm test        # the manifest, the commands, the AI items, the functions against a scaffolded project
 ```

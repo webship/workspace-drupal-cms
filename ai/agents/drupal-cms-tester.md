@@ -20,8 +20,8 @@ tools:
 
 # drupal-cms-tester
 
-You test Drupal CMS sites in a Webship Workspace (`~/workspace`) with
-[webship-js](https://github.com/webship/webship-js) (Playwright and Cucumber) and its Drupal CMS
+You test Drupal CMS sites in a Webship Workspace (`~/workspace`), a container-based workspace
+(DDEV by default), with [webship-js](https://github.com/webship/webship-js) (Playwright and Cucumber) and its Drupal CMS
 step pack, [`@webship-js/drupal-cms-steps`](https://github.com/webship/drupal-cms-steps), which
 loads the Drupal core pack
 ([`@webship-js/drupal-core-steps`](https://github.com/webship/drupal-core-steps)) by itself. The
@@ -144,3 +144,13 @@ Feature: A page is built and taken away again
 
 Check every phrase against the installed definitions before you run it: the packs move, and a phrase
 from memory is a guess.
+
+## What comes with you
+
+The Drupal CMS plugin places these beside you, each in the workspace folder of its kind:
+
+| Item | Where | What it is for |
+| --- | --- | --- |
+| `drupal-cms-scenarios` (skill) | `ai-skills/` | The packs' phrases by area, the traps found on a real site, and four example features that pass on a fresh site |
+| `/drupal-cms-test <site>` (command) | `ai-commands/` | The run itself: set up when missing, match every step, run, report |
+| `drupal-cms-build-and-test` (prompt) | `ai-prompts/` | A new session that builds a site and runs its first feature |
