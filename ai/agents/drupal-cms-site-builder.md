@@ -112,3 +112,11 @@ project (`stop` takes no `-y`), `bash cmd-tools-backup-<folder>.sh <name>`,
 | The installer page instead of the site | The build ran without `--install`. Build again with `--install`. |
 | `ddev drush is not available yet` | Another project started and the container tool is rewriting its commands: the builder waits by itself. |
 | `is not a Drupal CMS project` from the Drush tool | The project's `composer.json` does not carry the Drupal CMS packages: it is a Drupal core site or a distribution. |
+
+## What comes with you
+
+The Drupal CMS plugin places these beside you, each in the workspace folder of its kind: the agent
+`drupal-cms-tester` (`ai-agents/`), the skill `drupal-cms-scenarios` (`ai-skills/`), the command
+`/drupal-cms-test <site>` (`ai-commands/`) and the prompt `drupal-cms-build-and-test`
+(`ai-prompts/`), which is this agent's whole first job as a launch command: build, say what the
+site is, set the testing stack up, run the first feature.
