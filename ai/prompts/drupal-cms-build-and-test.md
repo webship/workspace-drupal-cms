@@ -8,6 +8,7 @@ Build a Drupal CMS site named <name> in this sites folder and test it with websh
 # ~/workspace/<dev|test|sandboxes|demos> · https://<name>.ddev.site · container-based (DDEV by default)
 # the builder deletes a project of the same name first: stop if <name> is a site somebody still needs
 # nothing on the host: no drush, composer, npm or mysql outside the site's container
+# a feature to write or a run to read: the book Automated Functional Testing Recipes first (its README.md, then the matching chapter), from .claude/automated-functional-testing-recipes/ in the project, ~/.claude/automated-functional-testing-recipes/ or https://github.com/webship/webship-js-ai-agent/tree/2.0.x/automated-functional-testing-recipes
 
 1. bash cmd-drupal-cms-project.sh <name> --install --add-users
    (add --template blank for the Blank site template, --recipes forms,search for add-on recipes,
