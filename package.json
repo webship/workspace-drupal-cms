@@ -1,6 +1,6 @@
 {
   "name": "@webship.co/workspace-drupal-cms",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Drupal CMS for Webship Workspace: one builder for Drupal CMS (`cmd-drupal-cms-project.sh`, a release, a site template and add-on recipes) and its Drush tool in every sites folder, the default accounts, the Drupal CMS step pack wired into the testing setup, and its AI items in their folders: two agents, a skill, a command and a prompt.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
